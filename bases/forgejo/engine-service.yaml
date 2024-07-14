@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forgejo
+  labels:
+    app: forgejo
+    role: engine
+spec:
+  type: LoadBalancer
+  selector:
+    app: forgejo
+    role: engine
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 3000
+    - name: sshgit
+      protocol: TCP
+      port: 222
+      targetPort: 22

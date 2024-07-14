@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+  labels:
+    app: forgejo
+    role: engine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo
+      role: engine
+  template:
+    metadata:
+      labels:
+        app: forgejo
+        role: engine
+    spec:
+      serviceAccountName: forgejo-service-account
+      containers:
+        - name: forgejo-engine
+          image: codeberg.org/forgejo/forgejo:7.0
+          ports:
+            - name: ssh
+              containerPort: 222
+            - name: http
+              containerPort: 3000
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: data
+              mountPath: /data
+          env:
+            - name: GITEA_TEMP
+              value: /tmp/gitea
+            - name: TMPDIR
+              value: /tmp/gitea
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+          startupProbe: &probe
+            failureThreshold: 10
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: http
+            timeoutSeconds: 1
+          readinessProbe:
+            <<: *probe
+            initialDelaySeconds: 60
+          livenessProbe:
+            <<: *probe
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: data
+          emptyDir: {} # To override in more specific scenarios
