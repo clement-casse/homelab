@@ -5,3 +5,14 @@ resources:
   - engine-deployment.yaml
   - engine-service.yaml
   - serviceaccount.yaml
+
+configMapGenerator:
+  - name: forgejo-config
+    files:
+      - ./config/forgejo.ini
+
+secretGenerator:
+  - name: forgejo-secrets
+    literals:
+      - secret_key=IsMeantToBeOverridedInOverlays,thx
+      - internal_token=AlsoNotMeantToBeUsedAsIs,pls_change_it

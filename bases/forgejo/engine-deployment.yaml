@@ -24,7 +24,7 @@ spec:
           image: codeberg.org/forgejo/forgejo:7.0
           ports:
             - name: ssh
-              containerPort: 222
+              containerPort: 22
             - name: http
               containerPort: 3000
           volumeMounts:
@@ -32,6 +32,18 @@ spec:
               mountPath: /tmp
             - name: data
               mountPath: /data
+            - name: config
+              mountPath: &config_file_path /data/gitea/conf/app.ini
+              subPath: &config_file_subpath app.ini
+              readOnly: true
+            - name: secret-key
+              mountPath: /etc/forgejo/secret_key
+              subPath: &secret_key_subpath secret_key
+              readOnly: true
+            - name: internal-token
+              mountPath: /etc/forgejo/internal_token
+              subPath: &internal_token_subpath internal_token
+              readOnly: true
           env:
             - name: GITEA_TEMP
               value: /tmp/gitea
@@ -41,6 +53,8 @@ spec:
               value: /data
             - name: GITEA_CUSTOM
               value: /data/gitea
+            - name: GITEA_APP_INI
+              value: *config_file_path
           startupProbe: &probe
             failureThreshold: 10
             initialDelaySeconds: 20
@@ -62,3 +76,21 @@ spec:
           emptyDir: {}
         - name: data
           emptyDir: {} # To override in more specific scenarios
+        - name: config
+          configMap:
+            name: forgejo-config
+            items:
+              - key: forgejo.ini
+                path: *config_file_subpath
+        - name: secret-key
+          secret:
+            secretName: forgejo-secrets
+            items:
+              - key: secret_key
+                path: *secret_key_subpath
+        - name: internal-token
+          secret:
+            secretName: forgejo-secrets
+            items:
+              - key: internal_token
+                path: *internal_token_subpath
