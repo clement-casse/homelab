@@ -32,10 +32,6 @@ spec:
               mountPath: /tmp
             - name: data
               mountPath: /data
-            - name: config
-              mountPath: &config_file_path /data/gitea/conf/app.ini
-              subPath: &config_file_subpath app.ini
-              readOnly: true
             - name: secret-key
               mountPath: /etc/forgejo/secret_key
               subPath: &secret_key_subpath secret_key
@@ -54,7 +50,29 @@ spec:
             - name: GITEA_CUSTOM
               value: /data/gitea
             - name: GITEA_APP_INI
-              value: *config_file_path
+              value: /data/gitea/conf/app.ini
+            - name: FORGEJO__server__PROTOCOL
+              value: http
+            - name: FORGEJO__server__HTTP_ADDR
+              value: 0.0.0.0
+            - name: FORGEJO__server__HTTP_PORT
+              value: "3000"
+            - name: FORGEJO__server__SSH_LISTEN_HOST
+              value: 0.0.0.0
+            - name: FORGEJO__server__SSH_PORT
+              value: "22"
+            - name: FORGEJO__log__MODE
+              value: console
+            - name: FORGEJO__security__SECRET_KEY_URI
+              value: file:/etc/forgejo/secret_key
+            - name: FORGEJO__security__INTERNAL_TOKEN_URI
+              value: file:/etc/forgejo/internal_token
+            - name: FORGEJO__security__INSTALL_LOCK
+              value: "true"
+            - name: FORGEJO__database__DB_TYPE
+              value: sqlite3
+            - name: FORGEJO__database__PATH
+              value: data/forgejo.db
           startupProbe: &probe
             failureThreshold: 10
             initialDelaySeconds: 20
@@ -76,12 +94,6 @@ spec:
           emptyDir: {}
         - name: data
           emptyDir: {} # To override in more specific scenarios
-        - name: config
-          configMap:
-            name: forgejo-config
-            items:
-              - key: forgejo.ini
-                path: *config_file_subpath
         - name: secret-key
           secret:
             secretName: forgejo-secrets

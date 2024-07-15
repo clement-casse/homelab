@@ -6,11 +6,6 @@ resources:
   - engine-service.yaml
   - serviceaccount.yaml
 
-configMapGenerator:
-  - name: forgejo-config
-    files:
-      - ./config/forgejo.ini
-
 secretGenerator:
   - name: forgejo-secrets
     literals:
