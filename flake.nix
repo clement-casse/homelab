@@ -1,5 +1,5 @@
 {
-  description = "Nix flake for creating a custom OpenTelemetry Collector";
+  description = "Nix flake for testing and deploying my homelab";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";

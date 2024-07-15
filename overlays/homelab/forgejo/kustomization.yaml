@@ -5,10 +5,11 @@ namespace: applications
 
 resources:
   - ../../../bases/forgejo/
+  - ../../../bases/forgejo/withIngress/
 
 patches:
+  - path: applyCustomConfig.yaml
   - path: setDomainName.yaml
-  - path: setAppTitle.yaml
 
 secretGenerator:
   - name: forgejo-secrets
