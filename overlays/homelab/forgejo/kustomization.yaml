@@ -8,3 +8,9 @@ resources:
 
 patches:
   - path: setDomainName.yaml
+  - path: setAppTitle.yaml
+
+secretGenerator:
+  - name: forgejo-secrets
+    behavior: replace
+    env: secrets.env

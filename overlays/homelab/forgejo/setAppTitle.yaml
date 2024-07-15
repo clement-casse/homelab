@@ -9,5 +9,5 @@ spec:
       containers:
         - name: forgejo-engine
           env:
-            - name: FORGEJO__server__DOMAIN
-              value: git.risk-draconis.ts.net
+            - name: APP_NAME
+              value: Ze Git
