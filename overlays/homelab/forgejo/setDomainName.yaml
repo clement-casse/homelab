@@ -1,0 +1,13 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+spec:
+  template:
+    spec:
+      containers:
+        - name: forgejo-engine
+          env:
+            - name: DOMAIN
+              value: git.risk-draconis.ts.net
