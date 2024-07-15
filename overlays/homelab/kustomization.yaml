@@ -4,4 +4,5 @@ kind: Kustomization
 resources:
   - namespace.yaml
   - ./tailscale-operator/
+  - ./csi-driver-smb/
   - ./forgejo/
