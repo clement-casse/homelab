@@ -5,3 +5,13 @@ helmCharts:
   - name: csi-driver-smb
     repo: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
     namespace: kube-system
+
+resources:
+  - storage-class.yaml
+
+secretGenerator:
+  - name: smbcreds
+    namespace: kube-system
+    env: smbcreds.env
+    options:
+      disableNameSuffixHash: true

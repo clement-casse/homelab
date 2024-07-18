@@ -5,11 +5,12 @@ namespace: applications
 
 resources:
   - ../../../bases/forgejo/
-  - ../../../bases/forgejo/withIngress/
+  - ./pvcLocalPath.yaml
 
 patches:
-  - path: applyCustomConfig.yaml
-  - path: setDomainName.yaml
+  - path: ./patchCustomConfig.yaml
+  - path: ./patchLocalPathVolume.yaml
+  - path: ./setDomainName.yaml
 
 secretGenerator:
   - name: forgejo-secrets

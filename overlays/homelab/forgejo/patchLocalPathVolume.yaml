@@ -1,0 +1,14 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+spec:
+  template:
+    spec:
+      volumes:
+        - name: data
+          emptyDir:
+            $patch: delete
+          persistentVolumeClaim:
+            claimName: forgejo-engine-data

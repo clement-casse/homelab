@@ -11,3 +11,5 @@ spec:
           env:
             - name: FORGEJO__server__DOMAIN
               value: git.risk-draconis.ts.net
+            - name: FORGEJO__server__ROOT_URL
+              value: https://git.risk-draconis.ts.net/
