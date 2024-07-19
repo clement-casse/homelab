@@ -13,5 +13,7 @@ spec:
               value: Ze Git
             - name: FORGEJO__server__DOMAIN
               value: git.risk-draconis.ts.net
+            - name: FORGEJO__server__SSH_DOMAIN
+              value: git.risk-draconis.ts.net
             - name: FORGEJO__server__ROOT_URL
-              value: https://git.risk-draconis.ts.net/
+              value: http://git.risk-draconis.ts.net:8088/

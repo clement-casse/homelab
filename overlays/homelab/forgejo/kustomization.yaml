@@ -12,6 +12,7 @@ components:
 patches:
   - path: ./patchCustomConfig.yaml
   - path: ./patchForgejoDataPVC.yaml
+  - path: ./patchServiceTailscale.yaml
 
 secretGenerator:
   - name: forgejo-secrets
