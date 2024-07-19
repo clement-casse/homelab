@@ -6,13 +6,20 @@ metadata:
 provisioner: smb.csi.k8s.io
 parameters:
   source: //mafreebox.freebox.fr/storage
+  subDir: "volumes/${pvc.metadata.name}"
+  onDelete: delete # delete the PVC entity in K8S
   csi.storage.k8s.io/provisioner-secret-name: smbcreds
   csi.storage.k8s.io/provisioner-secret-namespace: kube-system
   csi.storage.k8s.io/node-stage-secret-name: smbcreds
   csi.storage.k8s.io/node-stage-secret-namespace: kube-system
+reclaimPolicy: Retain # Retain the data
 volumeBindingMode: Immediate
 mountOptions:
   - dir_mode=0777
   - file_mode=0777
   - uid=1001
   - gid=1001
+  - noperm
+  - mfsymlinks
+  - cache=strict
+  - noserverino # required to prevent data corruption
