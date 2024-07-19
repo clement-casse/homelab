@@ -5,12 +5,13 @@ namespace: applications
 
 resources:
   - ../../../bases/forgejo/
-  - ./pvcLocalPath.yaml
+
+components:
+  - ../../../bases/forgejo/withPersistentStorage/
 
 patches:
   - path: ./patchCustomConfig.yaml
-  - path: ./patchLocalPathVolume.yaml
-  - path: ./setDomainName.yaml
+  - path: ./patchForgejoDataPVC.yaml
 
 secretGenerator:
   - name: forgejo-secrets
