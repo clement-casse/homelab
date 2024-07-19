@@ -4,10 +4,10 @@ kind: Kustomization
 namespace: applications
 
 resources:
-  - ../../../bases/forgejo/
+  - ../../../applications/forgejo/
 
 components:
-  - ../../../bases/forgejo/withPersistentStorage/
+  - ../../../applications/forgejo/withPersistentStorage/
 
 patches:
   - path: ./patchCustomConfig.yaml
