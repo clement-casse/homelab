@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-forgejo
+  labels:
+    app: forgejo
+    role: database
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo
+      role: database
+  template:
+    metadata:
+      labels:
+        app: forgejo
+        role: engine
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: &data_volume_name postgresdata
+          env:
+            - name: POSTGRES_DB
+              value: forgejo
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-creds
+                  key: password
+      volumes:
+        - name: *data_volume_name
+          persistentVolumeClaim:
+            claimName: forgejo-postgres-data

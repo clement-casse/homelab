@@ -8,6 +8,7 @@ resources:
 
 components:
   - ../../../applications/forgejo/withPersistentStorage/
+  - ../../../applications/forgejo/withPostgres/
 
 patches:
   - path: ./patchCustomConfig.yaml
