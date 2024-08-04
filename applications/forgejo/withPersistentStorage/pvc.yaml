@@ -4,8 +4,9 @@ kind: PersistentVolumeClaim
 metadata:
   name: forgejo-engine-data
 spec:
-  storageClassName: local-path
+  storageClassName: manual
   accessModes: [ReadWriteOnce]
+  volumeMode: Filesystem
   resources:
     requests:
       storage: 10Gi
