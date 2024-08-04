@@ -21,7 +21,7 @@ spec:
       serviceAccountName: forgejo-service-account
       containers:
         - name: forgejo-engine
-          image: codeberg.org/forgejo/forgejo:7.0
+          image: codeberg.org/forgejo/forgejo:8.0
           ports:
             - name: ssh
               containerPort: 22
@@ -51,6 +51,8 @@ spec:
               value: /data/gitea
             - name: GITEA_APP_INI
               value: /data/gitea/conf/app.ini
+            - name: FORGEJO__log__MODE
+              value: console
             - name: FORGEJO__server__PROTOCOL
               value: http
             - name: FORGEJO__server__HTTP_ADDR
@@ -61,8 +63,6 @@ spec:
               value: 0.0.0.0
             - name: FORGEJO__server__SSH_PORT
               value: "22"
-            - name: FORGEJO__log__MODE
-              value: console
             - name: FORGEJO__security__SECRET_KEY_URI
               value: file:/etc/forgejo/secret_key
             - name: FORGEJO__security__INTERNAL_TOKEN_URI
