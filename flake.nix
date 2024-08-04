@@ -17,6 +17,7 @@
           kubectl
           kubernetes-helm
           kustomize
+          kubeconform
         ];
       in
       with pkgs;
