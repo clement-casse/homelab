@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forgejo-http
+  labels:
+    app: forgejo
+    role: engine
+    protocol: http
+spec:
+  type: LoadBalancer
+  selector:
+    app: forgejo
+    role: engine
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 3000
