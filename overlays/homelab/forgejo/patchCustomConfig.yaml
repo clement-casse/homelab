@@ -16,4 +16,4 @@ spec:
             - name: FORGEJO__server__SSH_DOMAIN
               value: gitssh.blue-alnitak.ts.net
             - name: FORGEJO__server__ROOT_URL
-              value: http://git.blue-alnitak.ts.net:8088/
+              value: https://git.blue-alnitak.ts.net/
