@@ -47,11 +47,6 @@ write_files:
       net.ipv6.conf.all.forwarding = 1
 
 runcmd:
-  - [
-      "sh",
-      "-c",
-      "curl https://get.netdata.cloud/kickstart.sh > /tmp/netdata-kickstart.sh && sh /tmp/netdata-kickstart.sh --disable-telemetry",
-    ]
   - ["sh", "-c", "curl -fsSL https://tailscale.com/install.sh | sh"]
   - ["sysctl", "-p", "/etc/sysctl.d/99-tailscale.conf"]
   - [
