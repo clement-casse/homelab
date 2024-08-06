@@ -1,0 +1,68 @@
+#cloud-config
+users:
+  - name: clement
+    gecos: Clément Cassé
+    groups: users,admin,wheel
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_import_id:
+      - gh:clement-casse
+
+disk_setup:
+  /dev/vda:
+    table_type: "mbr"
+    layout: true
+
+fs_setup:
+  - device: /dev/vda1
+    filesystem: "ext4"
+
+package_update: true
+package_upgrade: true
+packages:
+  - curl
+  - ca-certificates
+  - unattended-upgrades
+
+write_files:
+  - path: /etc/rancher/k3s/config.yaml
+    content: |
+      bind-address: 0.0.0.0
+      https-listen-port: 6443
+      write-kubeconfig-mode: "0640"
+      tls-san:
+        - "k3s-master"
+        - "k3s-master.blue-alnitak.ts.net"
+      cluster-cidr: "10.42.0.0/16"
+      service-cidr: "10.43.0.0/16"
+      service-node-port-range: "30000-32767"
+      cluster-init: true
+      disable-helm-controller: true
+      disable:
+        - "traefik"
+        - "metrics-server"
+  - path: /etc/sysctl.d/99-tailscale.conf
+    owner: root:root
+    content: |
+      net.ipv4.ip_forward = 1
+      net.ipv6.conf.all.forwarding = 1
+
+runcmd:
+  - [
+      "sh",
+      "-c",
+      "curl https://get.netdata.cloud/kickstart.sh > /tmp/netdata-kickstart.sh && sh /tmp/netdata-kickstart.sh --disable-telemetry",
+    ]
+  - ["sh", "-c", "curl -fsSL https://tailscale.com/install.sh | sh"]
+  - ["sysctl", "-p", "/etc/sysctl.d/99-tailscale.conf"]
+  - [
+      "tailscale",
+      "up",
+      "--authkey={{ .TailscaleServer.Secret }}",
+      "--advertise-tags=tag:server",
+    ]
+  - ["tailscale", "set", "--ssh", "--hostname=k3s-master"]
+  - [
+      "sh",
+      "-c",
+      "curl -sfL https://get.k3s.io | K3S_CONFIG_FILE='/etc/rancher/k3s/config.yaml' sh -",
+    ]
