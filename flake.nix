@@ -18,6 +18,14 @@
           kubernetes-helm
           kustomize
           kubeconform
+
+          #qemu
+          qemu-utils
+
+          go
+          gopls
+          gotools
+          go-tools
         ];
       in
       with pkgs;
