@@ -1,19 +1,16 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-resources:
-  - namespace.yaml
+namespace: tools
 
 helmCharts:
   - name: tailscale-operator
     repo: https://pkgs.tailscale.com/helmcharts
-    namespace: tailscale
     valuesInline:
       installCRDs: true
 
 secretGenerator:
   - name: operator-oauth
-    namespace: tailscale
     env: tailscale-oauth.env
     options:
       disableNameSuffixHash: true
