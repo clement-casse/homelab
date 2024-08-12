@@ -4,6 +4,7 @@ users:
     gecos: Clément Cassé
     groups: users,admin,wheel
     sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /usr/bin/bash
     ssh_import_id:
       - gh:clement-casse
 
@@ -23,6 +24,8 @@ packages:
   - ca-certificates
   - unattended-upgrades
 
+{{ $clusterPodCIDR := "10.42.0.0/16" -}}
+
 write_files:
   - path: /etc/rancher/k3s/config.yaml
     content: |
@@ -32,14 +35,21 @@ write_files:
       tls-san:
         - "{{ .K3S.Server.Name }}"
         - "{{ .K3S.Server.Name }}.{{ .Tailscale.TailnetName }}.ts.net"
-      cluster-cidr: "10.42.0.0/16"
+      cluster-cidr: "{{$clusterPodCIDR}}"
       service-cidr: "10.43.0.0/16"
       service-node-port-range: "30000-32767"
       cluster-init: true
+      flannel-backend: "none"
+      disable-network-policy: true
       disable-helm-controller: true
       disable:
         - "traefik"
         - "metrics-server"
+  - path: /etc/sysctl.d/90-cilium.conf
+    owner: root:root
+    content: |
+      fs.inotify.max_user_watches = 524288
+      fs.inotify.max_user_instances = 512
   - path: /etc/sysctl.d/99-tailscale.conf
     owner: root:root
     content: |
@@ -47,17 +57,35 @@ write_files:
       net.ipv6.conf.all.forwarding = 1
 
 runcmd:
-  - ["sh", "-c", "curl -fsSL https://tailscale.com/install.sh | sh"]
-  - ["sysctl", "-p", "/etc/sysctl.d/99-tailscale.conf"]
+  - [sh, -c, "curl -fsSL https://tailscale.com/install.sh | sh"]
+  - [sysctl, -p, "/etc/sysctl.d/90-cilium.conf"]
+  - [sysctl, -p, "/etc/sysctl.d/99-tailscale.conf"]
   - [
       "tailscale",
       "up",
       "--authkey={{ .Tailscale.ServerOAuthKey.Secret }}",
       "--advertise-tags=tag:server",
     ]
-  - ["tailscale", "set", "--ssh", "--hostname={{ .K3S.Server.Name }}"]
+  - [tailscale, set, --ssh, "--hostname={{ .K3S.Server.Name }}"]
   - [
-      "sh",
-      "-c",
+      sh,
+      -c,
       "curl -sfL https://get.k3s.io | K3S_CONFIG_FILE='/etc/rancher/k3s/config.yaml' sh -",
+    ]
+  - [
+      sh,
+      -c,
+      {{- $ciliumVersion := "$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)" -}}
+      {{- $ciliumArch := "arm64" }}
+      "curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/{{$ciliumVersion}}/cilium-linux-{{$ciliumArch}}.tar.gz{,.sha256sum}; sha256sum --check cilium-linux-{{$ciliumArch}}.tar.gz.sha256sum; tar xzvfC cilium-linux-{{$ciliumArch}}.tar.gz /usr/local/bin; rm cilium-linux-{{$ciliumArch}}.tar.gz; rm cilium-linux-{{$ciliumArch}}.tar.gz.sha256sum;"
+    ]
+  - [
+      sh,
+      -c,
+      "KUBECONFIG=/etc/rancher/k3s/k3s.yaml cilium install --version 1.16.0 --set=ipam.operator.clusterPoolIPv4PodCIDRList='{{$clusterPodCIDR}}'"
+    ]
+  - [
+      sh,
+      -c,
+      "KUBECONFIG=/etc/rancher/k3s/k3s.yaml cilium status --wait"
     ]
