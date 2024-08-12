@@ -11,6 +11,26 @@ import (
 )
 
 type homelabProjectVars struct {
+	Tailscale struct {
+		TailnetName    string
+		ServerOAuthKey struct {
+			Secret string
+		}
+		K8SOperatorOAuthKey struct {
+			ClientID string
+			Secret   string
+		}
+	}
+	K3S struct {
+		Server struct {
+			Name string
+		}
+		JoinToken string
+	}
+	SMBServer struct {
+		Username string
+		Password string
+	}
 	Netdata struct {
 		Parent struct {
 			Token string
@@ -21,37 +41,27 @@ type homelabProjectVars struct {
 			Rooms string
 		}
 	}
-	TailscaleServer struct {
-		Secret string
-	}
-	TailscaleK8S struct {
-		ClientID string
-		Secret   string
-	}
-	SMBServer struct {
-		Username string
-		Password string
-	}
 	Forgejo struct {
 		SecretKey     string
 		InternalToken string
 	}
-	K8SJoinToken string
 }
 
 func main() {
 	var homelab = &homelabProjectVars{}
 	homelab.SMBServer.Username = os.Getenv("SMB_SERVER_USERNAME")
 	homelab.SMBServer.Password = os.Getenv("SMB_SERVER_PASSWORD")
-	homelab.TailscaleServer.Secret = os.Getenv("TS_SECRET_TAG_SERVER")
-	homelab.TailscaleK8S.ClientID = os.Getenv("TS_CLIENTID_K8S_OPERATOR")
-	homelab.TailscaleK8S.Secret = os.Getenv("TS_SECRET_K8S_OPERATOR")
-	homelab.Forgejo.SecretKey = os.Getenv("FORGEJO_SECRET_KEY")
-	homelab.Forgejo.InternalToken = os.Getenv("FORGEJO_INTERNAL_TOKEN")
+	homelab.Tailscale.TailnetName = os.Getenv("TS_TAILNET")
+	homelab.Tailscale.ServerOAuthKey.Secret = os.Getenv("TS_SECRET_TAG_SERVER")
+	homelab.Tailscale.K8SOperatorOAuthKey.ClientID = os.Getenv("TS_CLIENTID_K8S_OPERATOR")
+	homelab.Tailscale.K8SOperatorOAuthKey.Secret = os.Getenv("TS_SECRET_K8S_OPERATOR")
 	homelab.Netdata.Parent.Token = os.Getenv("NETDATA_TOKEN")
 	homelab.Netdata.Parent.Rooms = os.Getenv("NETDATA_ROOMS")
 	homelab.Netdata.Child.Token = os.Getenv("NETDATA_TOKEN")
 	homelab.Netdata.Child.Rooms = os.Getenv("NETDATA_ROOMS")
+	homelab.K3S.Server.Name = "k3s-master"
+	homelab.Forgejo.SecretKey = os.Getenv("FORGEJO_SECRET_KEY")
+	homelab.Forgejo.InternalToken = os.Getenv("FORGEJO_INTERNAL_TOKEN")
 
 	filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
 		if !isTemplateFile(d) {

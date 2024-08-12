@@ -30,8 +30,8 @@ write_files:
       https-listen-port: 6443
       write-kubeconfig-mode: "0640"
       tls-san:
-        - "k3s-master"
-        - "k3s-master.blue-alnitak.ts.net"
+        - "{{ .K3S.Server.Name }}"
+        - "{{ .K3S.Server.Name }}.{{ .Tailscale.TailnetName }}.ts.net"
       cluster-cidr: "10.42.0.0/16"
       service-cidr: "10.43.0.0/16"
       service-node-port-range: "30000-32767"
@@ -52,10 +52,10 @@ runcmd:
   - [
       "tailscale",
       "up",
-      "--authkey={{ .TailscaleServer.Secret }}",
+      "--authkey={{ .Tailscale.ServerOAuthKey.Secret }}",
       "--advertise-tags=tag:server",
     ]
-  - ["tailscale", "set", "--ssh", "--hostname=k3s-master"]
+  - ["tailscale", "set", "--ssh", "--hostname={{ .K3S.Server.Name }}"]
   - [
       "sh",
       "-c",
