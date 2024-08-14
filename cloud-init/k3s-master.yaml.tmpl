@@ -43,7 +43,7 @@ write_files:
       disable:
         - "traefik"
         - "metrics-server"
-  - path: /etc/sysctl.d/90-cilium.conf
+  - path: /etc/sysctl.d/90-filedescriptors.conf
     owner: root:root
     content: |
       fs.inotify.max_user_watches = 524288
@@ -56,7 +56,7 @@ write_files:
 
 runcmd:
   - [sh, -c, "curl -fsSL https://tailscale.com/install.sh | sh"]
-  - [sysctl, -p, "/etc/sysctl.d/90-cilium.conf"]
+  - [sysctl, -p, "/etc/sysctl.d/90-filedescriptors.conf"]
   - [sysctl, -p, "/etc/sysctl.d/99-tailscale.conf"]
   - [
       "tailscale",
@@ -69,21 +69,4 @@ runcmd:
       sh,
       -c,
       "curl -sfL https://get.k3s.io | K3S_CONFIG_FILE='/etc/rancher/k3s/config.yaml' sh -",
-    ]
-  - [
-      sh,
-      -c,
-      {{- $ciliumVersion := "$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)" -}}
-      {{- $ciliumArch := "arm64" }}
-      "curl -L --fail --remote-name-all https://github.com/cilium/cilium-cli/releases/download/{{$ciliumVersion}}/cilium-linux-{{$ciliumArch}}.tar.gz{,.sha256sum}; sha256sum --check cilium-linux-{{$ciliumArch}}.tar.gz.sha256sum; tar xzvfC cilium-linux-{{$ciliumArch}}.tar.gz /usr/local/bin; rm cilium-linux-{{$ciliumArch}}.tar.gz; rm cilium-linux-{{$ciliumArch}}.tar.gz.sha256sum;"
-    ]
-  - [
-      sh,
-      -c,
-      "KUBECONFIG=/etc/rancher/k3s/k3s.yaml cilium install --version 1.16.0 --namespace kube-system --set=ipam.operator.clusterPoolIPv4PodCIDRList={{ .K3S.ClusterPodCIDR }}"
-    ]
-  - [
-      sh,
-      -c,
-      "KUBECONFIG=/etc/rancher/k3s/k3s.yaml cilium status --wait"
     ]
