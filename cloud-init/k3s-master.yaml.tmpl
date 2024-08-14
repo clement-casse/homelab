@@ -61,7 +61,7 @@ runcmd:
   - [
       "tailscale",
       "up",
-      "--authkey={{ .Tailscale.ServerOAuthKey.Secret }}",
+      "--authkey={{ .Tailscale.ServerOAuthKey.Secret }}?ephemeral=false",
       "--advertise-tags=tag:server",
     ]
   - [tailscale, set, --ssh, "--hostname={{ .K3S.Server.Name }}"]
