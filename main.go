@@ -25,7 +25,8 @@ type homelabProjectVars struct {
 		Server struct {
 			Name string
 		}
-		JoinToken string
+		ClusterPodCIDR string
+		JoinToken      string
 	}
 	SMBServer struct {
 		Username string
@@ -60,6 +61,7 @@ func main() {
 	homelab.Netdata.Child.Token = os.Getenv("NETDATA_TOKEN")
 	homelab.Netdata.Child.Rooms = os.Getenv("NETDATA_ROOMS")
 	homelab.K3S.Server.Name = "k3s-master"
+	homelab.K3S.ClusterPodCIDR = "10.42.0.0/16"
 	homelab.Forgejo.SecretKey = os.Getenv("FORGEJO_SECRET_KEY")
 	homelab.Forgejo.InternalToken = os.Getenv("FORGEJO_INTERNAL_TOKEN")
 

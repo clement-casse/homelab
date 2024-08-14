@@ -24,8 +24,6 @@ packages:
   - ca-certificates
   - unattended-upgrades
 
-{{ $clusterPodCIDR := "10.42.0.0/16" -}}
-
 write_files:
   - path: /etc/rancher/k3s/config.yaml
     content: |
@@ -35,7 +33,7 @@ write_files:
       tls-san:
         - "{{ .K3S.Server.Name }}"
         - "{{ .K3S.Server.Name }}.{{ .Tailscale.TailnetName }}.ts.net"
-      cluster-cidr: "{{$clusterPodCIDR}}"
+      cluster-cidr: "{{ .K3S.ClusterPodCIDR }}"
       service-cidr: "10.43.0.0/16"
       service-node-port-range: "30000-32767"
       cluster-init: true
@@ -82,7 +80,7 @@ runcmd:
   - [
       sh,
       -c,
-      "KUBECONFIG=/etc/rancher/k3s/k3s.yaml cilium install --version 1.16.0 --set=ipam.operator.clusterPoolIPv4PodCIDRList='{{$clusterPodCIDR}}'"
+      "KUBECONFIG=/etc/rancher/k3s/k3s.yaml cilium install --version 1.16.0 --namespace kube-system --set=ipam.operator.clusterPoolIPv4PodCIDRList={{ .K3S.ClusterPodCIDR }}"
     ]
   - [
       sh,
