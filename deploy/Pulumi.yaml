@@ -1,0 +1,7 @@
+name: homelab
+runtime: go
+description: Homelab deployment project
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: kubernetes-go

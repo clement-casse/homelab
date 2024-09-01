@@ -18,9 +18,12 @@
           kubernetes-helm
           kustomize
           kubeconform
+          gettext
+          yq-go
 
-          #qemu
-          qemu-utils
+          pulumi-bin
+          pulumi-esc
+          crd2pulumi
 
           go
           gopls
@@ -34,6 +37,10 @@
 
         devShells.default = mkShell {
           inherit nativeBuildInputs;
+          # Load ESC environmentVariables in the devShell
+          shellHook = ''
+            eval $(esc open homelab-dev --format shell);
+          '';
         };
       }
     );

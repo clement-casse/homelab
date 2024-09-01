@@ -1,5 +1,3 @@
 .direnv/
-.env
 
-*.img
-charts/
+go.work*
