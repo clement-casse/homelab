@@ -38,6 +38,10 @@ var (
 	// TraefikPort is the port number that the traefik deployment listens on for internal usage.
 	TraefikPort = 9000
 
+	// ChartCtxKey represent the context key to store the *helmv3.Release for the Traefik Chart to inject it later
+	// pulumi resource dependency for other resources.
+	ChartCtxKey = "traefikChart"
+
 	disabledValue = map[string]any{"enabled": false}
 )
 

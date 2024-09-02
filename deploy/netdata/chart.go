@@ -25,9 +25,8 @@ var (
 )
 
 type DeployArgs struct {
-	Rooms          pulumi.String
-	Token          pulumi.StringOutput
-	TailscaleChart *helmv3.Release
+	Rooms pulumi.String
+	Token pulumi.StringOutput
 }
 
 type Deployment struct {
@@ -85,13 +84,9 @@ func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*D
 		return nil, err
 	}
 
-	chart.GetResource("v1/Service", "netdata", Namespace).ApplyT(func(r any) (*corev1.Service, error) {
-		svc := r.(*corev1.Service)
-		_, err = traefik.RegisterTailscaleSvc(ctx, "netdata", svc, args.TailscaleChart)
-		if err != nil {
-			return nil, err
-		}
-		return svc, nil
+	//get netdata service exposing port 19999 and make it available in Tailscale through Traefik.
+	chart.GetResource("v1/Service", "netdata", Namespace).ApplyT(func(r any) (*traefik.TailscaleSvc, error) {
+		return traefik.RegisterTailscaleSvc(ctx, "netdata", r.(*corev1.Service))
 	})
 
 	return &Deployment{

@@ -22,6 +22,8 @@ var (
 	AddressESCConfigKey   = "smbserverAddress"
 	UsernameESCConfigtKey = "smbserverUsername"
 	PasswordESCSecretKey  = "smbserverPassword"
+
+	StorageClassCtxKey = "smbStorageClass"
 )
 
 type DeployArgs struct {
@@ -84,7 +86,7 @@ func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*D
 			"csi.storage.k8s.io/node-stage-secret-name":       credentials.Metadata.Name().Elem(),
 			"csi.storage.k8s.io/node-stage-secret-namespace":  credentials.Metadata.Namespace().Elem(),
 		},
-	}, pulumi.Provider(k8s))
+	}, pulumi.Provider(k8s), pulumi.DependsOn([]pulumi.Resource{chart}))
 	if err != nil {
 		return nil, err
 	}

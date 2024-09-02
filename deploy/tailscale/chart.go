@@ -23,6 +23,8 @@ var (
 
 	ClientIDESCConfigKey = "tailscaleK8SOperatorClientID"
 	OAuthKeyESCSecretKey = "tailscaleK8SOperatorSecret"
+
+	ChartCtxKey = "tsChart"
 )
 
 type DeployArgs struct {

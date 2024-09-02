@@ -21,13 +21,15 @@ func main() {
 			return
 		}
 
-		if _, err = smb.Deploy(ctx, k8s, &smb.DeployArgs{
+		smbDeploy, err := smb.Deploy(ctx, k8s, &smb.DeployArgs{
 			Address:  pulumi.String(config.Get(smb.AddressESCConfigKey)),
 			Username: pulumi.String(config.Get(smb.UsernameESCConfigtKey)),
 			Password: config.GetSecret(smb.PasswordESCSecretKey),
-		}); err != nil {
+		})
+		if err != nil {
 			return
 		}
+		ctx = ctx.WithValue(smb.StorageClassCtxKey, smbDeploy.StorageClass)
 
 		tailscaleDeploy, err := tailscale.Deploy(ctx, k8s, &tailscale.DeployArgs{
 			ClientID: pulumi.String(config.Get(tailscale.ClientIDESCConfigKey)),
@@ -36,18 +38,19 @@ func main() {
 		if err != nil {
 			return
 		}
+		ctx = ctx.WithValue(tailscale.ChartCtxKey, tailscaleDeploy.Chart)
 
-		_, err = traefik.Deploy(ctx, k8s, &traefik.DeployArgs{
+		traefikDeploy, err := traefik.Deploy(ctx, k8s, &traefik.DeployArgs{
 			ServiceDeps: []pulumi.Resource{tailscaleDeploy.Chart},
 		})
 		if err != nil {
 			return
 		}
+		ctx = ctx.WithValue(traefik.ChartCtxKey, traefikDeploy.Chart)
 
 		if _, err = netdata.Deploy(ctx, k8s, &netdata.DeployArgs{
-			Rooms:          pulumi.String(config.Get(netdata.RoomsESCConfigKey)),
-			Token:          config.GetSecret(netdata.TokenESCSecretKey),
-			TailscaleChart: tailscaleDeploy.Chart,
+			Rooms: pulumi.String(config.Get(netdata.RoomsESCConfigKey)),
+			Token: config.GetSecret(netdata.TokenESCSecretKey),
 		}); err != nil {
 			return
 		}
