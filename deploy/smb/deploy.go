@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	// Namespace represents the K8S namespace in which the SMB Driver Helm release is deployed
+	// Namespace represents the K8S namespace in which the SMB Driver is deployed
 	Namespace = "kube-system"
 
 	// HelmChart is the name of the Helm Chart
