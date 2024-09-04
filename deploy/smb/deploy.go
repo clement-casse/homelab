@@ -40,9 +40,10 @@ type Deployment struct {
 // Deploy applies the CSI SMB Driver helm chart to the given K8S cluster. It also applies a Kubernetes secret for credentials
 // and the defintion of a storage class for SMB persistent volumes.
 func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*Deployment, error) {
-	chart, err := helmv3.NewRelease(ctx, "csi-driver-smb", &helmv3.ReleaseArgs{
+	rel, err := helmv3.NewRelease(ctx, "csi-driver-smb", &helmv3.ReleaseArgs{
 		Chart:     pulumi.String(HelmChart),
 		Namespace: pulumi.String(Namespace),
+		Atomic:    pulumi.Bool(true),
 		RepositoryOpts: helmv3.RepositoryOptsArgs{
 			Repo: pulumi.String(HelmRepoURL),
 		},
@@ -86,13 +87,13 @@ func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*D
 			"csi.storage.k8s.io/node-stage-secret-name":       credentials.Metadata.Name().Elem(),
 			"csi.storage.k8s.io/node-stage-secret-namespace":  credentials.Metadata.Namespace().Elem(),
 		},
-	}, pulumi.Provider(k8s), pulumi.DependsOn([]pulumi.Resource{chart}))
+	}, pulumi.Provider(k8s), pulumi.DependsOn([]pulumi.Resource{rel}))
 	if err != nil {
 		return nil, err
 	}
 
 	return &Deployment{
-		Chart:        chart,
+		Chart:        rel,
 		StorageClass: storageClass,
 	}, nil
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 
 	"homelab/tailscale"
-	traefikv1alpha1 "homelab/traefik/kubernetes/traefik/v1alpha1"
+	traefikv1alpha1 "homelab/traefik/crds/kubernetes/traefik/v1alpha1"
 )
 
 type TailscaleSvc struct {

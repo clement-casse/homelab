@@ -40,9 +40,7 @@ func main() {
 		}
 		ctx = ctx.WithValue(tailscale.ChartCtxKey, tailscaleDeploy.Chart)
 
-		traefikDeploy, err := traefik.Deploy(ctx, k8s, &traefik.DeployArgs{
-			ServiceDeps: []pulumi.Resource{tailscaleDeploy.Chart},
-		})
+		traefikDeploy, err := traefik.Deploy(ctx, k8s, &traefik.DeployArgs{})
 		if err != nil {
 			return
 		}

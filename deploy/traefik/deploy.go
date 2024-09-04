@@ -6,9 +6,11 @@ import (
 	helmv3 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/helm/v3"
 	metav1 "github.com/pulumi/pulumi-kubernetes/sdk/v4/go/kubernetes/meta/v1"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+
+	"homelab/tailscale"
 )
 
-//go:generate crd2pulumi --go --goName "traefikcrds" --goPath "traefik" "https://raw.githubusercontent.com/traefik/traefik/v3.1/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
+//go:generate crd2pulumi --go --goName "crds" "https://raw.githubusercontent.com/traefik/traefik/v3.1/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
 
 var (
 	// Namespace represents the K8S namespace in which the Traefik Helm release is deployed
@@ -45,30 +47,22 @@ var (
 	disabledValue = map[string]any{"enabled": false}
 )
 
-type DeployArgs struct {
-	ServiceDeps []pulumi.Resource
-}
+type DeployArgs struct{}
 
 type Deployment struct {
-	Namespace *corev1.Namespace
-	Chart     *helmv3.Release
-	Service   *corev1.Service
+	Chart   *helmv3.Release
+	Service *corev1.Service
 }
 
 // Deploy applies the Traefik Helm chart to the given K8S Cluster.
 func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*Deployment, error) {
-	ns, err := corev1.NewNamespace(ctx, Namespace, &corev1.NamespaceArgs{
-		Metadata: metav1.ObjectMetaArgs{
-			Name: pulumi.String(Namespace),
-		},
-	}, pulumi.Provider(k8s))
-	if err != nil {
-		return nil, err
-	}
+	tsChart := ctx.Value(tailscale.ChartCtxKey).(*helmv3.Release)
 
-	chart, err := helmv3.NewRelease(ctx, "traefik", &helmv3.ReleaseArgs{
-		Chart:     pulumi.String(HelmChart),
-		Namespace: ns.Metadata.Name(),
+	rel, err := helmv3.NewRelease(ctx, "traefik", &helmv3.ReleaseArgs{
+		Chart:           pulumi.String(HelmChart),
+		Namespace:       pulumi.String(Namespace),
+		CreateNamespace: pulumi.Bool(true),
+		Atomic:          pulumi.Bool(true),
 		RepositoryOpts: &helmv3.RepositoryOptsArgs{
 			Repo: pulumi.String(HelmRepoURL),
 		},
@@ -111,14 +105,14 @@ func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*D
 				},
 			},
 		}),
-	}, pulumi.Provider(k8s), pulumi.DependsOn([]pulumi.Resource{ns}))
+	}, pulumi.Provider(k8s))
 	if err != nil {
 		return nil, err
 	}
 
 	svc, err := corev1.NewService(ctx, "traefik-ui-svc", &corev1.ServiceArgs{
 		Metadata: metav1.ObjectMetaArgs{
-			Namespace: ns.Metadata.Name(),
+			Namespace: rel.Status.Namespace(),
 			Annotations: pulumi.ToStringMap(map[string]string{
 				"tailscale.com/hostname": "traefik",
 			}),
@@ -134,14 +128,13 @@ func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*D
 				},
 			},
 		},
-	}, pulumi.Provider(k8s), pulumi.DependsOn(args.ServiceDeps))
+	}, pulumi.Provider(k8s), pulumi.DependsOn([]pulumi.Resource{tsChart}))
 	if err != nil {
 		return nil, err
 	}
 
 	return &Deployment{
-		Namespace: ns,
-		Chart:     chart,
-		Service:   svc,
+		Chart:   rel,
+		Service: svc,
 	}, nil
 }
