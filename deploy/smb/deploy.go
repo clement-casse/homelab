@@ -13,39 +13,50 @@ var (
 	// Namespace represents the K8S namespace in which the SMB Driver is deployed
 	Namespace = "kube-system"
 
-	// HelmChart is the name of the Helm Chart
-	HelmChart = "csi-driver-smb"
+	// AddressESCConfigKey is key of the pulumiconfig in the environment that stores the address of the SMB server
+	AddressESCConfigKey = "smbserverAddress"
 
-	// HelmRepoURL is the URL of the SMB Driver Helm Repository
-	HelmRepoURL = "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
-
-	AddressESCConfigKey   = "smbserverAddress"
+	// UsernameESCConfigtKey is key of the pulumiconfig in the environment that stores the username of the user to log in the SMB server
 	UsernameESCConfigtKey = "smbserverUsername"
-	PasswordESCSecretKey  = "smbserverPassword"
 
+	// PasswordESCSecretKey is key of the pulumiconfig in the environment that stores the password of the user to log in the SMB server
+	PasswordESCSecretKey = "smbserverPassword"
+
+	// StorageClassCtxKey represent the context key to store the SMB storage class
 	StorageClassCtxKey = "smbStorageClass"
 )
 
+// DeployArgs is a struct that passes the arguments requiered to deploy the SMB storage class in the target K8S cluster
 type DeployArgs struct {
 	Address  pulumi.String
 	Username pulumi.String
 	Password pulumi.StringOutput
 }
 
+// Deployment is the result of the Deploy funtion providing references to the pulumi resources, so that they can be
+// referenced throughout the whole pulumi deployment.
 type Deployment struct {
-	Chart        *helmv3.Release
+	// Chart
+	Chart *helmv3.Release
+
+	// StorageClass
 	StorageClass *storagev1.StorageClass
 }
+
+var (
+	helmChart   = "csi-driver-smb"
+	helmRepoURL = "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
+)
 
 // Deploy applies the CSI SMB Driver helm chart to the given K8S cluster. It also applies a Kubernetes secret for credentials
 // and the defintion of a storage class for SMB persistent volumes.
 func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*Deployment, error) {
 	rel, err := helmv3.NewRelease(ctx, "csi-driver-smb", &helmv3.ReleaseArgs{
-		Chart:     pulumi.String(HelmChart),
+		Chart:     pulumi.String(helmChart),
 		Namespace: pulumi.String(Namespace),
 		Atomic:    pulumi.Bool(true),
 		RepositoryOpts: helmv3.RepositoryOptsArgs{
-			Repo: pulumi.String(HelmRepoURL),
+			Repo: pulumi.String(helmRepoURL),
 		},
 	}, pulumi.Provider(k8s))
 	if err != nil {

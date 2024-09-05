@@ -16,12 +16,6 @@ var (
 	// Namespace represents the K8S namespace in which the Traefik Helm release is deployed
 	Namespace = "traefik-system"
 
-	// HelmChart is the name of the Helm Chart
-	HelmChart = "traefik"
-
-	// HelmRepoURL is the URL of the Traefik Helm Repository
-	HelmRepoURL = "https://traefik.github.io/charts/"
-
 	// LabelSelector represents the unique label key-value pair that the traefik Pod have to
 	// be referenced by K8S services. Use the following form with Pulumi.
 	//
@@ -43,28 +37,38 @@ var (
 	// ChartCtxKey represent the context key to store the *helmv3.Release for the Traefik Chart to inject it later
 	// pulumi resource dependency for other resources.
 	ChartCtxKey = "traefikChart"
-
-	disabledValue = map[string]any{"enabled": false}
 )
 
+// DeployArgs is a struct that passes the arguments requiered to deploy the Traefik reverse proxy to the target K8S cluster
 type DeployArgs struct{}
 
+// Deployment is the result of the Deploy funtion providing references to the pulumi resources, so that they can be
+// referenced throughout the whole pulumi deployment.
 type Deployment struct {
-	Chart   *helmv3.Release
-	Service *corev1.Service
+	// Chart
+	Chart *helmv3.Release
+
+	// TailscaleServiceUI
+	TailscaleServiceUI *corev1.Service
 }
+
+var (
+	helmChart     = "traefik"
+	helmRepoURL   = "https://traefik.github.io/charts/"
+	disabledValue = map[string]any{"enabled": false}
+)
 
 // Deploy applies the Traefik Helm chart to the given K8S Cluster.
 func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*Deployment, error) {
 	tsChart := ctx.Value(tailscale.ChartCtxKey).(*helmv3.Release)
 
 	rel, err := helmv3.NewRelease(ctx, "traefik", &helmv3.ReleaseArgs{
-		Chart:           pulumi.String(HelmChart),
+		Chart:           pulumi.String(helmChart),
 		Namespace:       pulumi.String(Namespace),
 		CreateNamespace: pulumi.Bool(true),
 		Atomic:          pulumi.Bool(true),
 		RepositoryOpts: &helmv3.RepositoryOptsArgs{
-			Repo: pulumi.String(HelmRepoURL),
+			Repo: pulumi.String(helmRepoURL),
 		},
 		Values: pulumi.ToMap(map[string]any{
 			"ingressClass": disabledValue, // Disable Traefik IngressClass, only CRDs are used.
@@ -134,7 +138,7 @@ func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*D
 	}
 
 	return &Deployment{
-		Chart:   rel,
-		Service: svc,
+		Chart:              rel,
+		TailscaleServiceUI: svc,
 	}, nil
 }

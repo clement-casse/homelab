@@ -10,39 +10,49 @@ var (
 	// Namespace represents the K8S namespace in which the Tailscale Operator Helm release is deployed
 	Namespace = "tailscale-system"
 
-	// HelmChart is the name of the Helm Chart
-	HelmChart = "tailscale-operator"
-
-	// HelmRepoURL is the URL of the Tailscale Helm Repository
-	HelmRepoURL = "https://pkgs.tailscale.com/helmcharts"
-
 	// TailnetESCConfigKey is key of the pulumiconfig in the environment that stores the name of the Tailscale network
 	TailnetESCConfigKey = "tailscaleTailnet"
 
+	// ClientIDESCConfigKey is key of the pulumiconfig in the environment that stores the Tailscale ClientID for the K8S operator
 	ClientIDESCConfigKey = "tailscaleK8SOperatorClientID"
+
+	// OAuthKeyESCSecretKey is key of the pulumiconfig in the environment that stores the Tailscale Secret for the K8S operator
 	OAuthKeyESCSecretKey = "tailscaleK8SOperatorSecret"
 
+	// ChartCtxKey represents the context key to store the *helmv3.Release for the Tailscale Operator
 	ChartCtxKey = "tsChart"
 )
 
+// DeployArgs is a struct that passes the arguments requiered to deploy the Tailscale Operator to the target K8S cluster
 type DeployArgs struct {
+	// ClientID
 	ClientID pulumi.String
+
+	// OAuthKey
 	OAuthKey pulumi.StringOutput
 }
 
+// Deployment is the result of the Deploy funtion providing references to the pulumi resources, so that they can be
+// referenced throughout the whole pulumi deployment.
 type Deployment struct {
+	// Chart
 	Chart *helmv3.Release
 }
+
+var (
+	helmChart   = "tailscale-operator"
+	helmRepoURL = "https://pkgs.tailscale.com/helmcharts"
+)
 
 // Deploy applies the Tailscale Helm chart to the given K8S provider
 func Deploy(ctx *pulumi.Context, k8s *kubernetes.Provider, args *DeployArgs) (*Deployment, error) {
 	rel, err := helmv3.NewRelease(ctx, "tailscale-operator", &helmv3.ReleaseArgs{
-		Chart:           pulumi.String(HelmChart),
+		Chart:           pulumi.String(helmChart),
 		Namespace:       pulumi.String(Namespace),
 		CreateNamespace: pulumi.Bool(true),
 		Atomic:          pulumi.Bool(true),
 		RepositoryOpts: &helmv3.RepositoryOptsArgs{
-			Repo: pulumi.String(HelmRepoURL),
+			Repo: pulumi.String(helmRepoURL),
 		},
 		Values: pulumi.ToMap(map[string]any{
 			"installCRDs": true,
