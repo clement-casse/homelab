@@ -39,7 +39,7 @@
           inherit nativeBuildInputs;
           # Load ESC environmentVariables in the devShell
           shellHook = ''
-            eval $(esc open homelab-dev --format shell);
+            eval $(esc open raz_algethi/default/homelab-dev --format shell);
           '';
         };
       }

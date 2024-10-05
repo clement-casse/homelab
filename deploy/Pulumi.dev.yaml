@@ -1,2 +1,2 @@
 environment:
-  - homelab-dev
+  - default/homelab-dev
