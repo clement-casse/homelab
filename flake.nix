@@ -23,7 +23,6 @@
 
           pulumi-bin
           pulumi-esc
-          crd2pulumi
 
           go
           gopls

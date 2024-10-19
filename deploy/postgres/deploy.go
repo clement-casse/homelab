@@ -10,7 +10,7 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-//go:generate crd2pulumi --go --goName "crds" "https://raw.githubusercontent.com/zalando/postgres-operator/master/charts/postgres-operator/crds/postgresqls.yaml" "https://raw.githubusercontent.com/zalando/postgres-operator/master/charts/postgres-operator/crds/postgresteams.yaml" "https://raw.githubusercontent.com/zalando/postgres-operator/master/charts/postgres-operator/crds/operatorconfigurations.yaml"
+//go:generate go run github.com/pulumi/crd2pulumi --go --goName "crds" "https://raw.githubusercontent.com/zalando/postgres-operator/master/charts/postgres-operator/crds/postgresqls.yaml" "https://raw.githubusercontent.com/zalando/postgres-operator/master/charts/postgres-operator/crds/postgresteams.yaml" "https://raw.githubusercontent.com/zalando/postgres-operator/master/charts/postgres-operator/crds/operatorconfigurations.yaml"
 
 var (
 	// Namespace represents the K8S namespace in which the Postgres operator is deployed
