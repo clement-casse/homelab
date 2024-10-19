@@ -8,7 +8,7 @@ env:
   GO_VERSION: "~1.22"
 
 jobs:
-  Generate:
+  Validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,16 +31,6 @@ jobs:
           path: deploy/postgres/crds
           retention-days: 1
           if-no-files-found: error
-
-  Validate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: "deploy/go.sum"
-          check-latest: true
       - run: go vet -json ./...
         working-directory: ./deploy
       - run: test -z $(go fmt ./...)
@@ -48,6 +38,7 @@ jobs:
 
   Deploy-Dev:
     runs-on: ubuntu-latest
+    needs: [ Validate ]
     environment: dev
     steps:
       - uses: tailscale/github-action@v2
