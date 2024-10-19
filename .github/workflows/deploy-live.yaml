@@ -62,14 +62,14 @@ jobs:
       - uses: pulumi/actions@v6
         with:
           command: preview
-          stack-name: raz_algethi/homelab/dev
+          stack-name: raz_algethi/homelab/live
           work-dir: ./deploy
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
       - uses: pulumi/actions@v6
         with:
           command: up
-          stack-name: raz_algethi/homelab/dev
+          stack-name: raz_algethi/homelab/live
           work-dir: ./deploy
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
