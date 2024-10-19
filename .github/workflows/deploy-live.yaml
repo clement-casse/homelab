@@ -39,7 +39,7 @@ jobs:
   Deploy-Live:
     runs-on: ubuntu-latest
     needs: [ Preparation ]
-    environment: live
+    environment: prod
     steps:
       - uses: tailscale/github-action@v2
         with:
