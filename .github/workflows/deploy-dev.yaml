@@ -1,0 +1,108 @@
+name: Validate Dev
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - deploy/**/*
+
+env:
+  GO_VERSION: "~1.22"
+
+jobs:
+  Preparation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: "deploy/go.sum"
+          check-latest: true
+      - run: go generate ./...
+        working-directory: ./deploy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: traefik-crds
+          path: deploy/traefik/crds
+          retention-days: 1
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: postgres-crds
+          path: deploy/postgres/crds
+          retention-days: 1
+          if-no-files-found: error
+      - run: go vet -json ./...
+        working-directory: ./deploy
+      - run: test -z $(go fmt ./...)
+        working-directory: ./deploy
+
+  Deploy-Dev:
+    runs-on: ubuntu-latest
+    needs: [ Preparation ]
+    environment: dev
+    steps:
+      - uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: "deploy/go.sum"
+      - uses: actions/download-artifact@v4
+        with:
+          name: traefik-crds
+          path: deploy/traefik/crds
+      - uses: actions/download-artifact@v4
+        with:
+          name: postgres-crds
+          path: deploy/postgres/crds
+      - uses: pulumi/actions@v6
+        with:
+          command: preview
+          stack-name: raz_algethi/homelab/dev
+          work-dir: ./deploy
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+      - uses: pulumi/actions@v6
+        with:
+          command: up
+          stack-name: raz_algethi/homelab/dev
+          work-dir: ./deploy
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+  Preview-Live:
+    runs-on: ubuntu-latest
+    needs: [ Deploy-Dev ]
+    environment: prod
+    steps:
+      - uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: "deploy/go.sum"
+      - uses: actions/download-artifact@v4
+        with:
+          name: traefik-crds
+          path: deploy/traefik/crds
+      - uses: actions/download-artifact@v4
+        with:
+          name: postgres-crds
+          path: deploy/postgres/crds
+      - uses: pulumi/actions@v6
+        with:
+          command: preview
+          stack-name: raz_algethi/homelab/live
+          work-dir: ./deploy
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
