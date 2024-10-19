@@ -99,3 +99,10 @@ jobs:
         with:
           name: postgres-crds
           path: deploy/postgres/crds
+      - uses: pulumi/actions@v6
+        with:
+          command: preview
+          stack-name: raz_algethi/homelab/live
+          work-dir: ./deploy
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
