@@ -26,6 +26,10 @@ jobs:
           cache-dependency-path: "**/go.sum"
       - run: go mod download
         working-directory: ./deploy
+      - run: go install github.com/pulumi/crd2pulumi@latest
+        working-directory: ./deploy
+      - run: go generate ./...
+        working-directory: ./deploy
       - uses: pulumi/actions@v6
         with:
           command: preview
