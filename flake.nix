@@ -35,7 +35,11 @@
         formatter = nixpkgs-fmt;
 
         devShells.default = mkShell {
-          inherit nativeBuildInputs;
+          nativeBuildInputs = nativeBuildInputs ++ [
+            git
+            cacert
+          ];
+
           # Load ESC environmentVariables in the devShell
           shellHook = ''
             eval $(esc open raz_algethi/default/homelab-dev --format shell);
