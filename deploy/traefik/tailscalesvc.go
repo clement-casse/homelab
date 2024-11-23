@@ -25,31 +25,53 @@ func RegisterTailscaleSvc(ctx *pulumi.Context, tsName string, svc *corev1.Servic
 	traefikChart := ctx.Value(ChartCtxKey).(*helmv3.Release)
 
 	// Create a K8S service of type LoadBalancer that gets its IP from Tailscale and link it to the Traefik Deployment.
-	tSvc, err := corev1.NewService(ctx, fmt.Sprintf("%s-svc", tsName), &corev1.ServiceArgs{
-		Metadata: metav1.ObjectMetaArgs{
-			Namespace: pulumi.String(Namespace),
-			Annotations: pulumi.ToStringMap(map[string]string{
-				"tailscale.com/hostname": tsName,
-			}),
-		},
-		Spec: &corev1.ServiceSpecArgs{
-			Type:              pulumi.String("LoadBalancer"),
-			LoadBalancerClass: pulumi.String("tailscale"),
-			Selector:          pulumi.ToStringMap(LabelSelector),
-			Ports: corev1.ServicePortArray{
-				&corev1.ServicePortArgs{
-					Name:       pulumi.String("http-web"),
-					Port:       pulumi.Int(80),
-					TargetPort: pulumi.Int(WebPort),
-				},
-				&corev1.ServicePortArgs{
-					Name:       pulumi.String("http-websecure"),
-					Port:       pulumi.Int(443),
-					TargetPort: pulumi.Int(WebsecurePort),
+	tSvc, err := corev1.NewService(ctx,
+		fmt.Sprintf("%s-svc", tsName),
+		&corev1.ServiceArgs{
+			Metadata: metav1.ObjectMetaArgs{
+				Namespace: pulumi.String(Namespace),
+				Annotations: pulumi.ToStringMap(map[string]string{
+					"tailscale.com/hostname": tsName,
+				}),
+			},
+			Spec: &corev1.ServiceSpecArgs{
+				Type:              pulumi.String("LoadBalancer"),
+				LoadBalancerClass: pulumi.String("tailscale"),
+				Selector:          pulumi.ToStringMap(LabelSelector),
+				Ports: corev1.ServicePortArray{
+					&corev1.ServicePortArgs{
+						Name:       pulumi.String("http-web"),
+						Port:       pulumi.Int(80),
+						TargetPort: pulumi.Int(WebPort),
+					},
+					&corev1.ServicePortArgs{
+						Name:       pulumi.String("http-websecure"),
+						Port:       pulumi.Int(443),
+						TargetPort: pulumi.Int(WebsecurePort),
+					},
 				},
 			},
-		},
-	}, pulumi.DependsOn([]pulumi.Resource{tsChart}))
+		}, pulumi.DependsOn([]pulumi.Resource{tsChart}),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	redirectMW, err := traefikv1alpha1.NewMiddleware(ctx,
+		fmt.Sprintf("%s-redirect-mw", tsName),
+		&traefikv1alpha1.MiddlewareArgs{
+			Metadata: metav1.ObjectMetaArgs{
+				Namespace: pulumi.String(Namespace),
+			},
+			Spec: traefikv1alpha1.MiddlewareSpecArgs{
+				RedirectRegex: traefikv1alpha1.MiddlewareSpecRedirectRegexArgs{
+					Permanent:   pulumi.Bool(false),
+					Regex:       pulumi.Sprintf("^https?://(?:100(?:\\.[0-9]{1,3}){3}|%s)(/.*)", tsName),
+					Replacement: pulumi.Sprintf("http://%s.%s.ts.net${1}", tsName, tailnet),
+				},
+			},
+		}, pulumi.DependsOn([]pulumi.Resource{tsChart}),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +96,22 @@ func RegisterTailscaleSvc(ctx *pulumi.Context, tsName string, svc *corev1.Servic
 								Name:      svc.Metadata.Name().Elem(),
 								Namespace: svc.Metadata.Namespace(),
 								Port:      svc.Spec.Ports().Index(pulumi.Int(0)).Port(),
+							},
+						},
+					},
+					traefikv1alpha1.IngressRouteSpecRoutesArgs{
+						Kind:  pulumi.String("Rule"),
+						Match: pulumi.Sprintf("HostRegexp(`^(100(\\.[0-9]{1,3}){3}|%s)$`)", tsName),
+						Middlewares: traefikv1alpha1.IngressRouteSpecRoutesMiddlewaresArray{
+							traefikv1alpha1.IngressRouteSpecRoutesMiddlewaresArgs{
+								Name:      redirectMW.Metadata.Name(),
+								Namespace: redirectMW.Metadata.Namespace(),
+							},
+						},
+						Services: traefikv1alpha1.IngressRouteSpecRoutesServicesArray{
+							traefikv1alpha1.IngressRouteSpecRoutesServicesArgs{
+								Kind: pulumi.String("TraefikService"),
+								Name: pulumi.String("noop@internal"),
 							},
 						},
 					},
