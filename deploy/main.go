@@ -55,7 +55,7 @@ func main() {
 		}
 
 		pgDeploy, err := postgres.Deploy(ctx, k8s, &postgres.DeployArgs{
-			InstallUI: true,
+			InstallUI: false,
 		})
 		if err != nil {
 			return
@@ -63,6 +63,14 @@ func main() {
 		ctx = ctx.WithValue(postgres.ChartCtxKey, pgDeploy.OperatorChart)
 
 		_ = ctx
+
+		// if _, err = forgejo.Deploy(ctx, k8s, &forgejo.DeployArgs{
+		// 	TailscaleName: pulumi.String("forge"),
+		// 	AdminUsername: pulumi.String("admin"),
+		// 	AdminPassword: pulumi.String("admin").ToStringOutput(), // This is temporary ...
+		// }); err != nil {
+		// 	return
+		// }
 
 		return
 	})
