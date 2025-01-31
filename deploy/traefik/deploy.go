@@ -10,7 +10,7 @@ import (
 	"homelab/tailscale"
 )
 
-//go:generate go run github.com/pulumi/crd2pulumi --go --goName "crds" "https://raw.githubusercontent.com/traefik/traefik/v3.1/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
+//go:generate crd2pulumi --go --goName "crds" "https://raw.githubusercontent.com/traefik/traefik/v3.1/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml"
 
 var (
 	// Namespace represents the K8S namespace in which the Traefik Helm release is deployed

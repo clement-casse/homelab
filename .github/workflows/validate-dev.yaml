@@ -14,11 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: "deploy/go.sum"
-          check-latest: true
+      - uses: nicknovitski/nix-develop@v1
       - run: go generate ./...
         working-directory: ./deploy
       - uses: actions/upload-artifact@v4
@@ -49,10 +45,7 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-          cache-dependency-path: "deploy/go.sum"
+      - uses: nicknovitski/nix-develop@v1
       - uses: actions/download-artifact@v4
         with:
           name: traefik-crds
