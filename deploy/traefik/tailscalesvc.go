@@ -65,12 +65,12 @@ func RegisterTailscaleSvc(ctx *pulumi.Context, tsName string, svc *corev1.Servic
 			},
 			Spec: traefikv1alpha1.MiddlewareSpecArgs{
 				RedirectRegex: traefikv1alpha1.MiddlewareSpecRedirectRegexArgs{
-					Permanent:   pulumi.Bool(false),
+					Permanent:   pulumi.Bool(true),
 					Regex:       pulumi.Sprintf("^https?://(?:100(?:\\.[0-9]{1,3}){3}|%s)(/.*)", tsName),
 					Replacement: pulumi.Sprintf("http://%s.%s.ts.net${1}", tsName, tailnet),
 				},
 			},
-		}, pulumi.DependsOn([]pulumi.Resource{tsChart}),
+		}, pulumi.DependsOn([]pulumi.Resource{traefikChart}),
 	)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func RegisterTailscaleSvc(ctx *pulumi.Context, tsName string, svc *corev1.Servic
 					},
 				},
 			},
-		}, pulumi.DependsOn([]pulumi.Resource{svc, traefikChart}))
+		}, pulumi.DependsOn([]pulumi.Resource{svc, traefikChart, redirectMW}))
 	if err != nil {
 		return nil, err
 	}
