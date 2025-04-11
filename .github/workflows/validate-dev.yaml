@@ -7,7 +7,7 @@ on:
       - deploy/**/*
 
 env:
-  GO_VERSION: "~1.23"
+  GO_VERSION: "~1.24"
 
 jobs:
   Preparation:
@@ -22,12 +22,6 @@ jobs:
         with:
           name: traefik-crds
           path: deploy/traefik/crds
-          retention-days: 1
-          if-no-files-found: error
-      - uses: actions/upload-artifact@v4
-        with:
-          name: postgres-crds
-          path: deploy/postgres/crds
           retention-days: 1
           if-no-files-found: error
       - run: go vet -json ./...
@@ -52,10 +46,6 @@ jobs:
         with:
           name: traefik-crds
           path: deploy/traefik/crds
-      - uses: actions/download-artifact@v4
-        with:
-          name: postgres-crds
-          path: deploy/postgres/crds
       - uses: pulumi/actions@v6
         with:
           command: preview

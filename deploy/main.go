@@ -6,7 +6,6 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 
 	"homelab/netdata"
-	"homelab/postgres"
 	"homelab/smb"
 	"homelab/tailscale"
 	"homelab/traefik"
@@ -53,14 +52,6 @@ func main() {
 		}); err != nil {
 			return
 		}
-
-		pgDeploy, err := postgres.Deploy(ctx, k8s, &postgres.DeployArgs{
-			InstallUI: false,
-		})
-		if err != nil {
-			return
-		}
-		ctx = ctx.WithValue(postgres.ChartCtxKey, pgDeploy.OperatorChart)
 
 		_ = ctx
 
