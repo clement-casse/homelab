@@ -1,0 +1,6 @@
+name: homelab
+description: A rebooted pulumi project for my homelab
+runtime:
+  name: nodejs
+  options:
+    packagemanager: yarn

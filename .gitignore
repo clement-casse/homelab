@@ -1,3 +1,5 @@
 .direnv/
 
-go.work*
+/bin/
+/crds/
+/node_modules/
