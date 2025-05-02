@@ -10,8 +10,6 @@
     "dependencies": {
         "@pulumi/kubernetes": "^4.0.0",
         "@pulumi/pulumi": "^3.113.0",
-        "@pulumi/tailscale": "^0.19.0",
-        "crdstraefik": "file:./crdstraefik",
-        "crdstailscale": "file:./crdstailscale"
+        "@pulumi/tailscale": "^0.19.0"
     }
 }

@@ -42,7 +42,7 @@ export class Longhorn extends pulumi.ComponentResource {
 
         this.storageClass = k8s.storage.v1.StorageClass.get(
             `${name}-storage-class`,
-            pulumi.interpolate`${this.helmRelease.status.name}`,
+            pulumi.interpolate`${name}`,
             { parent: this, dependsOn: [this.helmRelease] },
         );
 
