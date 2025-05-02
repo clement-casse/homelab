@@ -30,7 +30,6 @@ export class Longhorn extends pulumi.ComponentResource {
             namespace: args.namespace,
             createNamespace: true,
             atomic: true,
-            skipAwait: false,
             values: helmValues,
         }, { parent: this });
 
@@ -43,7 +42,7 @@ export class Longhorn extends pulumi.ComponentResource {
         this.storageClass = k8s.storage.v1.StorageClass.get(
             `${name}-storage-class`,
             pulumi.interpolate`${name}`,
-            { parent: this, dependsOn: [this.helmRelease] },
+            { parent: this, dependsOn: [this.helmRelease, this.namespace] },
         );
 
         this.frontendService = k8s.core.v1.Service.get(
