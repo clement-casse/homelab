@@ -6,7 +6,7 @@ set -eu;
 __dir="$(cd "$(dirname "${0}")" && pwd)"
 __user="${SUDO_USER:-$USER}"
 
-__escEnv="default/homelab-dev"
+__escEnv="homelab/dev"
 __vmProvider="orb"
 __vmProviderTimeoutSeconds=180
 __vmName="k3s-master-dev"

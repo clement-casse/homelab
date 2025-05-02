@@ -8,41 +8,19 @@ users:
     ssh_import_id:
       - gh:clement-casse
 
-disk_setup:
-  /dev/vda:
-    table_type: "mbr"
-    layout: true
-
-fs_setup:
-  - device: /dev/vda1
-    filesystem: "ext4"
-
 package_update: true
 package_upgrade: true
 packages:
   - curl
   - ca-certificates
   - unattended-upgrades
-  - open-iscsi
 
 write_files:
   - path: /etc/rancher/k3s/config.yaml
     content: |
-      bind-address: 0.0.0.0
-      https-listen-port: "${K3S_HTTPS_LISTEN_PORT}"
-      write-kubeconfig-mode: "0640"
-      tls-san:
-        - "${K3S_MASTER_NAME}"
-        - "${K3S_MASTER_NAME}.${TS_TAILNET}.ts.net"
-      cluster-cidr: "${K3S_CLUSTER_POD_CIDR}"
-      service-cidr: "${K3S_SERVICE_CIDR}"
-      service-node-port-range: "30000-32767"
-      cluster-init: true
-      disable-helm-controller: true
-      disable:
-        - "traefik"
-        - "traefik-crds"
-        - "metrics-server"
+      token: "${}"
+      server: "https://${K3S_MASTER_NAME}.TS_TAILNET.ts.net:${K3S_HTTPS_LISTEN_PORT}"
+      node-name: "${RPI_NODE_BASENAME}-${RPI_NODE_NUMBER}"
   - path: /etc/sysctl.d/90-filedescriptors.conf
     owner: root:root
     content: |
@@ -64,7 +42,7 @@ runcmd:
       "--authkey=${TS_OAUTH_SECRET}?ephemeral=false",
       "--advertise-tags=tag:server",
     ]
-  - [tailscale, set, --ssh, "--hostname=${K3S_MASTER_NAME}"]
+  - [tailscale, set, --ssh, "--hostname=${RPI_NODE_BASENAME}-${RPI_NODE_NUMBER}"]
   - [
       sh,
       -c,

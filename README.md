@@ -19,9 +19,6 @@ This repository hosts the code of my homelab setup running on a self-hosted Kube
       pulumiConfig:
           # The KUBECONFIG for the target K3S Cluster
           kubernetes:kubeconfig: "[secret]"
-          # Configuration for the Netdata deployment:
-          netdataRooms: ""         # a coma separated list of ID for Netdata rooms
-          netdataToken: "[secret]" # the private join token
           # Configuration for the Tailscale Operator:
           tailscaleTailnet: ""                     # The name of the Tailnet
           tailscaleK8SOperatorClientID: "[secret]" # The ClientID of the Tailscale OAuth Client

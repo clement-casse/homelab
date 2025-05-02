@@ -1,0 +1,15 @@
+{
+    "name": "homelab-pulumi-deployment",
+    "scripts": {
+        "preinstall": "bash ./scripts/preinstall.sh"
+    },
+    "devDependencies": {
+        "@types/node": "^18",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@pulumi/kubernetes": "^4.0.0",
+        "@pulumi/pulumi": "^3.113.0",
+        "@pulumi/tailscale": "^0.19.0"
+    }
+}

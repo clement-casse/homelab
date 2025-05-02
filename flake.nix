@@ -25,10 +25,9 @@
           pulumi-esc
           crd2pulumi
 
-          go
-          gopls
-          gotools
-          go-tools
+          nodejs
+          nodePackages.typescript
+          yarn
         ];
       in
       with pkgs;
