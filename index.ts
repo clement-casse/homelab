@@ -29,12 +29,12 @@ const smbStorageClass = csiDriverSmb.createStorageClass(
     config.requireSecret("smbserverPassword"),
 );
 
-const longhorn = new Longhorn("longhorn", { 
-    namespace: "longhorn-system",
-});
-
 const reverseProxy = new Traefik("traefik", {
     namespace: "traefik-system",
 }, { provider: k8sProvider });
 
-reverseProxy.registerWebServiceInTailscale("longhorn", config.require("tailscaleTailnet"), longhorn.frontendService);
+const longhorn = new Longhorn("longhorn", { 
+    namespace: "longhorn-system",
+}, { provider: k8sProvider });
+
+// reverseProxy.registerWebServiceInTailscale("longhorn", config.require("tailscaleTailnet"), longhorn.frontendService);
