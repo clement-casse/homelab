@@ -1,6 +1,6 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
-import * as traefikCRDs from "../crds/nodejs/traefik"
+import { Middleware, IngressRoute } from "crds/traefik/v1alpha1"
 
 export interface TraefikArgs {
     namespace: string
@@ -108,7 +108,7 @@ export class Traefik extends pulumi.ComponentResource {
 
         // Creates a middleware in traefik that redirects the requests which Host is either the
         // tailscale address or short name to the fully qualified address.
-        const redirectMiddleware = new traefikCRDs.v1alpha1.Middleware(`${name}-redirect-mw`, {
+        const redirectMiddleware = new Middleware(`${name}-redirect-mw`, {
             metadata: { namespace: this.namespace.metadata.name },
             spec: {
                 redirectRegex: {
@@ -119,7 +119,7 @@ export class Traefik extends pulumi.ComponentResource {
             }
         }, { parent: this, dependsOn: [svc] });
 
-        const ingressRoute = new traefikCRDs.v1alpha1.IngressRoute(`${name}-ts-ingressroute`, {
+        const ingressRoute = new IngressRoute(`${name}-ts-ingressroute`, {
             metadata: { namespace: this.namespace.metadata.name },
             spec: {
                 entryPoints: ["web", "websecure"],
