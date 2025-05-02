@@ -37,4 +37,8 @@ const longhorn = new Longhorn("longhorn", {
     namespace: "longhorn-system",
 }, { provider: k8sProvider });
 
-// reverseProxy.registerWebServiceInTailscale("longhorn", config.require("tailscaleTailnet"), longhorn.frontendService);
+reverseProxy.registerWebServiceInTailscale(
+    "longhorn",
+    config.require("tailscaleTailnet"),
+    longhorn.frontendService,
+);
