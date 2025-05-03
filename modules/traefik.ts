@@ -1,9 +1,11 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
+import { TailscaleOperator } from "./tailscale";
 import { Middleware, IngressRoute } from "../crdstraefik/traefik/v1alpha1";
 
 export interface TraefikArgs {
-    namespace: string
+    namespace: string,
+    tailscaleOperator: TailscaleOperator,
 }
 
 export class Traefik extends pulumi.ComponentResource {
@@ -11,6 +13,7 @@ export class Traefik extends pulumi.ComponentResource {
     public readonly helmRelease: k8s.helm.v3.Release;
     public readonly traefikUiService: k8s.core.v1.Service;
 
+    readonly tailscaleOperator: TailscaleOperator;
     readonly deployLabels: Record<string, string>;
 
     public static readonly HELM_CHART_REPO = "https://traefik.github.io/charts/";
@@ -24,6 +27,8 @@ export class Traefik extends pulumi.ComponentResource {
         super("raz_algethi:homelab:Traefik", name, {}, opts);
 
         this.deployLabels = { "homelab/app": name };
+
+        this.tailscaleOperator = args.tailscaleOperator;
 
         const helmValues = {
             "ingressClass": { "enabled": false }, // Disable Traefik IngressClass, only CRDs are used.
@@ -87,10 +92,10 @@ export class Traefik extends pulumi.ComponentResource {
         this.registerOutputs();
     }
 
-    registerWebServiceInTailscale(name: string, tailnet: string, svc: k8s.core.v1.Service) {
-        const fqdn = `${name}.${tailnet}.ts.net`;
+    registerWebServiceInTailscale(name: string, svc: k8s.core.v1.Service, port: string | number) {
+        const fqdn = `${name}.${this.tailscaleOperator.tailnet}.ts.net`;
 
-        const k8sLoadBalancerSvc = new k8s.core.v1.Service(`${name}-ts-lb-svc`, {
+        new k8s.core.v1.Service(`${name}-ts-lb-svc`, {
             metadata: {
                 namespace: this.namespace.metadata.name,
                 annotations: { "tailscale.com/hostname": name },
@@ -104,7 +109,7 @@ export class Traefik extends pulumi.ComponentResource {
                     { name: "http-websecure", port: 443, targetPort: Traefik.PORT_WEBSECURE },
                 ],
             }
-        }, { parent: this, dependsOn: [svc] });
+        }, { parent: this.tailscaleOperator, dependsOn: [this.helmRelease, svc] });
 
         // Creates a middleware in traefik that redirects the requests which Host is either the
         // tailscale address or short name to the fully qualified address.
@@ -117,9 +122,9 @@ export class Traefik extends pulumi.ComponentResource {
                     replacement: `http://${fqdn}\${1}`,
                 }
             }
-        }, { parent: this, dependsOn: [svc] });
+        }, { parent: this, dependsOn: [this.helmRelease, svc] });
 
-        const ingressRoute = new IngressRoute(`${name}-ts-ingressroute`, {
+        new IngressRoute(`${name}-ts-ingressroute`, {
             metadata: { namespace: this.namespace.metadata.name },
             spec: {
                 entryPoints: ["web", "websecure"],
@@ -130,7 +135,7 @@ export class Traefik extends pulumi.ComponentResource {
                         kind: "Service",
                         name: svc.metadata.name,
                         namespace: svc.metadata.namespace,
-                        port: svc.spec.ports[0].port,
+                        port: port,
                     }],
                 }, {
                     kind: "Rule",
@@ -142,7 +147,7 @@ export class Traefik extends pulumi.ComponentResource {
                     services: [{ kind: "TraefikService", name: "noop@internal" }],
                 }],
             }
-        }, { parent: this, dependsOn: [svc] });
+        }, { parent: this, dependsOn: [this.helmRelease, svc] });
     }
 
 }

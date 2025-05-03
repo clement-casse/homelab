@@ -4,6 +4,7 @@ import * as pulumi from "@pulumi/pulumi";
 
 export interface TailscaleOperatorArgs {
     namespace: string,
+    tailnet: string,
     clientID: string,
     oauthKey: pulumi.Output<string>,
 }
@@ -11,6 +12,7 @@ export interface TailscaleOperatorArgs {
 export class TailscaleOperator extends pulumi.ComponentResource {
     public readonly namespace: k8s.core.v1.Namespace;
     public readonly helmRelease: k8s.helm.v3.Release;
+    public readonly tailnet: string;
 
     public static readonly HELM_CHART_REPO = "https://pkgs.tailscale.com/helmcharts";
     public static readonly HELM_CHART_NAME = "tailscale-operator";
@@ -43,6 +45,8 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             pulumi.interpolate `${this.helmRelease.status.namespace}`,
             { parent: this },
         );
+
+        this.tailnet = args.tailnet;
 
         this.registerOutputs();
     }

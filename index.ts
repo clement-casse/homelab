@@ -14,11 +14,12 @@ const k8sProvider = new k8s.Provider("cluster", {
 
 const ts = new TailscaleOperator("tailscale-operator", {
     namespace: "tailscale-system",
+    tailnet: config.require("tailscaleTailnet"),
     clientID: config.require("tailscaleK8SOperatorClientID"),
     oauthKey: config.requireSecret("tailscaleK8SOperatorSecret"),
 }, { provider: k8sProvider });
 
-const csiDriverSmb = new CsiDriverSmb("csi-driver-smb", { 
+const csiDriverSmb = new CsiDriverSmb("csi-driver-smb", {
     namespace: "kube-system",
 }, { provider: k8sProvider });
 
@@ -31,6 +32,7 @@ const smbStorageClass = csiDriverSmb.createStorageClass(
 
 const reverseProxy = new Traefik("traefik", {
     namespace: "traefik-system",
+    tailscaleOperator: ts,
 }, { provider: k8sProvider });
 
 const longhorn = new Longhorn("longhorn", { 
@@ -39,6 +41,6 @@ const longhorn = new Longhorn("longhorn", {
 
 reverseProxy.registerWebServiceInTailscale(
     "longhorn",
-    config.require("tailscaleTailnet"),
     longhorn.frontendService,
+    "http",
 );
