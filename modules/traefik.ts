@@ -1,7 +1,7 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 import { TailscaleOperator } from "./tailscale";
-import { Middleware, IngressRoute } from "../crdstraefik/traefik/v1alpha1";
+import { Middleware, IngressRoute } from "../crds/traefik/traefik/v1alpha1";
 
 export interface TraefikArgs {
     namespace: string,

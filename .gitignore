@@ -1,5 +1,5 @@
 .direnv/
 
 /bin/
-/crds*/
+/crds/
 /node_modules/
