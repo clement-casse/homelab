@@ -22,6 +22,9 @@ export class Longhorn extends pulumi.ComponentResource {
                 "ui": { "type": "ClusterIP" },
             },
             "longhornUI": { "replicas": 1 },
+            "defaultSettings": {
+                "deletingConfirmationFlag": "true",
+            },
         };
 
         this.helmRelease = new k8s.helm.v3.Release(`${name}-chart`, {
