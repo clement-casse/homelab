@@ -23,6 +23,8 @@ export class Longhorn extends pulumi.ComponentResource {
             },
             "longhornUI": { "replicas": 1 },
             "defaultSettings": {
+                "allowCollectingLonghornUsageMetrics": "false",
+                "defaultReplicaCount": "1",
                 "deletingConfirmationFlag": "true",
             },
         };
